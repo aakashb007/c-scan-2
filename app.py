@@ -30,7 +30,7 @@ except ImportError:
 except Exception:
     pass
 
-st.set_page_config(page_title="APEX // Pump & Dump Scanner", page_icon="🔥", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="APEX 2.5 // Pump & Dump Scanner", page_icon="🔥", layout="wide", initial_sidebar_state="expanded")
 
 for k,v in [('results',[]),('last_scan',"—"),('scan_count',0),
             ('btc_price',0),('btc_trend',"—"),('fng_val',50),('fng_txt',"Neutral"),
