@@ -4049,7 +4049,7 @@ red_flag should be true only for clear shill/spam/pump-and-dump patterns"""
                 # ── Call Groq API ─────────────────────────────────────
                 import urllib.request, urllib.error
                 groq_payload = _json.dumps({
-                    "model": "llama3-70b-8192",
+                    "model": "llama-3.3-70b-versatile",
                     "messages": [{"role": "user", "content": prompt}],
                     "max_tokens": 1500,
                     "temperature": 0.3
