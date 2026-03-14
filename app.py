@@ -21,7 +21,7 @@ try:
     nest_asyncio.apply(loop)
 except: pass
 
-st.set_page_config(page_title="APEX51 // Pump & Dump Scanner", page_icon="🔥", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="APEXAI // Pump & Dump Scanner", page_icon="🔥", layout="wide", initial_sidebar_state="expanded")
 
 _SS_DEFAULTS = {
     'results':[], 'last_scan':"—", 'scan_count':0, 'btc_price':0, 'btc_trend':"—",
@@ -40,7 +40,7 @@ _SS_DEFAULTS = {
 for k,v in _SS_DEFAULTS.items():
     if k not in st.session_state: st.session_state[k] = v
 
-JOURNAL_FILE="trade_journal.csv"; COOLDOWN_FILE="symbol_cooldowns.json"; SETTINGS_FILE="APEX51_settings.json"; GL_PERF_FILE="gl_performance.csv"
+JOURNAL_FILE="trade_journal.csv"; COOLDOWN_FILE="symbol_cooldowns.json"; SETTINGS_FILE="apex_settings.json"; GL_PERF_FILE="gl_performance.csv"
 
 DEFAULT_SETTINGS = {
     "scan_depth":40,"scan_modes":["mixed"],"fast_tf":"15m","slow_tf":"4h","min_score":10,
@@ -480,23 +480,23 @@ def check_daily_summary(s):
         tps=len(df24[df24['status']=='TP']); sls=len(df24[df24['status']=='SL'])
         active=len(df24[df24['status']=='ACTIVE'])
         wr=(tps/(tps+sls)*100) if (tps+sls)>0 else 0
-        msg=(f"📊 **APEX51 24h Journal Summary**\n"
+        msg=(f"📊 **APEX 24h Journal Summary**\n"
              f"🕐 {now.strftime('%Y-%m-%d %H:%M UTC')} | {(now + __import__('datetime').timedelta(hours=5)).strftime('%Y-%m-%d %H:%M PKT')}\n"
              f"━━━━━━━━━━━━━━━━━\n"
              f"Total Signals: **{total}** | 📗 Long: **{longs}** | 📕 Short: **{shorts}**\n"
              f"✅ TP Hits: **{tps}** | 🛑 SL Hits: **{sls}** | 🔄 Active: **{active}**\n"
              f"🎯 Win Rate: **{wr:.1f}%**\n"
              f"━━━━━━━━━━━━━━━━━\n"
-             f"*Powered by APEX51 Intelligence Terminal*")
+             f"*Powered by APEXAI Intelligence Terminal*")
         tg_msg=msg.replace("**","<b>").replace("**","</b>")
         if s.get('tg_token') and s.get('tg_chat_id'):
             send_tg(s['tg_token'],s['tg_chat_id'],tg_msg.replace("**","").replace("*",""))
         if s.get('discord_webhook'):
             send_discord(s['discord_webhook'],{
-                "title":"📊 APEX51 24h Journal Summary",
+                "title":"📊 APEXAI 24h Journal Summary",
                 "color":0x2563eb,
                 "description":msg,
-                "footer":{"text":f"APEX51 Terminal • {now.strftime('%H:%M UTC')} | {(now + __import__('datetime').timedelta(hours=5)).strftime('%H:%M PKT')}"}
+                "footer":{"text":f"APEXAI Terminal • {now.strftime('%H:%M UTC')} | {(now + __import__('datetime').timedelta(hours=5)).strftime('%H:%M PKT')}"}
             })
     except: pass
 
@@ -773,7 +773,7 @@ def run_dst_scan(coin_list, s, exchange_clients):
     """
     Fully isolated DEMA+ST scanner. Runs on 5m (or configured TF).
     If watchlist is enabled — builds its own coin list from watchlist directly.
-    If watchlist is off — uses APEX51 coin list.
+    If watchlist is off — uses APEX coin list.
     """
     results = []
     tf = s.get('dst_timeframe', '5m')
@@ -783,7 +783,7 @@ def run_dst_scan(coin_list, s, exchange_clients):
     use_watchlist = s.get('dst_use_watchlist', False)
 
     if use_watchlist and watchlist:
-        # Build coin list directly from watchlist — independent of APEX51
+        # Build coin list directly from watchlist — independent of APEX
         coin_list = []
         for base in watchlist:
             # Try USDT perp format on gate first, then mexc
@@ -1351,7 +1351,7 @@ def send_gl_discord_alert(webhook_url, sig):
                 f"{tp_sl_line}\n"
                 f"📊 **RSI:** {sig['rsi']} | **VOL:** {sig['vol_ratio']}× avg"
             ),
-            'footer': {'text': f'APEX51 — Gainers/Losers Scanner • {sig.get("scan_time","–")} | {sig.get("scan_time_pkt","–")}'}
+            'footer': {'text': f'APEXAI — Gainers/Losers Scanner • {sig.get("scan_time","–")} | {sig.get("scan_time_pkt","–")}'}
         }
         requests.post(webhook_url, json={'embeds': [embed]}, timeout=5)
     except: pass
@@ -1372,7 +1372,7 @@ def send_dst_discord_alert(webhook_url, sig):
                 f"📊 **RSI:** {sig['rsi']} | **VOL:** {sig['vol_ratio']}× avg | **ST Flip:** {sig['fresh_bars']} bars ago\n"
                 f"📐 **DEMA:** `${sig['dema']:.6f}` | **ATR:** `${sig['atr']:.6f}`"
             ),
-            'footer': {'text': f'APEX51 — DEMA+ST Scanner • {sig.get("scan_time","–")} | {sig.get("scan_time_pkt","–")}'}
+            'footer': {'text': f'APEXAI — DEMA+ST Scanner • {sig.get("scan_time","–")} | {sig.get("scan_time_pkt","–")}'}
         }
         requests.post(webhook_url, json={'embeds': [embed]}, timeout=5)
     except:
@@ -1682,7 +1682,7 @@ class PrePumpScreener:
             subs="CryptoCurrency+CryptoMoonShots+SatoshiStreetBets+altcoin+CryptoMarkets"
             rr=requests.get(f"https://www.reddit.com/r/{subs}/search.json",
                 params={"q":sym,"sort":"new","t":"hour","limit":25,"restrict_sr":"1"},
-                headers={"User-Agent":"Mozilla/5.0 APEX51/3.0"},timeout=6)
+                headers={"User-Agent":"Mozilla/5.0 APEX/3.0"},timeout=6)
             if rr.status_code==200:
                 posts=rr.json().get('data',{}).get('children',[])
                 if posts:
@@ -2446,7 +2446,7 @@ class PrePumpScreener:
             result['dst_confirmed'] = True
             result['pump_score'] = min(100, result['pump_score'] + boost)
             result['reasons'].insert(0,
-                f"🔵 DEMA+ST CONFIRMED: Both APEX51 + DEMA/SuperTrend agree {sig} "
+                f"🔵 DEMA+ST CONFIRMED: Both APEX + DEMA/SuperTrend agree {sig} "
                 f"| DEMA dist {abs(dst['close']-dst['dema'])/dst['close']*100:.2f}% "
                 f"| ST flipped {dst['fresh_bars']} bars ago | R:R {dst['rr']}")
             result['signal_breakdown']['dst_boost'] = boost
@@ -2455,7 +2455,7 @@ class PrePumpScreener:
             result['dst_confirmed'] = False
             result['pump_score'] = max(0, result['pump_score'] - penalty)
             result['warnings'].append(
-                f"⚠️ DEMA+ST conflict: APEX51 says {sig} but DEMA/SuperTrend says {dst['direction']}")
+                f"⚠️ DEMA+ST conflict: APEX says {sig} but DEMA/SuperTrend says {dst['direction']}")
             result['signal_breakdown']['dst_boost'] = -penalty
         else:
             result['dst_confirmed'] = False
@@ -2572,6 +2572,59 @@ def render_card(res, is_sniper=False, dual_confirmed=False):
     dual_html=""
     if dual_confirmed:
         dual_html='<div class="dual-confirm">🔥 DUAL CONFIRMED — Scanner + Sentinel both flagged this coin — HIGH CONVICTION SIGNAL</div>'
+
+    # ── AI Trade Score badge ──────────────────────────────────────────────────
+    _ai_scores = st.session_state.get('ai_trade_scores', {})
+    _sym_base = res.get('symbol','').replace('/USDT:USDT','').replace('/USDT','').upper()
+    _ai_data = _ai_scores.get(_sym_base) or _ai_scores.get(res.get('symbol',''))
+    ai_badge_html = ''
+    if _ai_data:
+        _conf = _ai_data.get('trade_confidence', 0)
+        _rank = _ai_data.get('rank', 99)
+        _reason = _ai_data.get('reason','')
+        _avoid = _ai_data.get('avoid', False)
+        _avoid_r = _ai_data.get('avoid_reason','')
+        if _rank == 1 and not _avoid:
+            ai_badge_html = (
+                '<div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #059669;'
+                'border-radius:8px;padding:8px 12px;margin:4px 0 6px 0;">' 
+                '<div style="display:flex;align-items:center;justify-content:space-between;">' 
+                '<div style="font-family:monospace;font-size:.65rem;font-weight:900;color:#059669;">🎯 BEST SETUP — AI Trade Score: ' + str(_conf) + '/100</div>' 
+                '<span style="font-family:monospace;font-size:.58rem;padding:2px 7px;border-radius:3px;background:#059669;color:white;">RANK #1</span>' 
+                '</div>' 
+                '<div style="font-family:monospace;font-size:.58rem;color:#166534;margin-top:3px;">' + _reason + '</div>' 
+                '</div>'
+            )
+        elif _avoid:
+            ai_badge_html = (
+                '<div style="background:#fef2f2;border:1px solid #dc2626;border-radius:6px;padding:6px 12px;margin:4px 0 6px 0;">' 
+                '<div style="font-family:monospace;font-size:.6rem;font-weight:700;color:#dc2626;">⛔ AI: AVOID — ' + _avoid_r + '</div>' 
+                '</div>'
+            )
+        else:
+            ai_badge_html = (
+                '<div style="font-family:monospace;font-size:.58rem;color:#64748b;padding:2px 0 4px 0;">' 
+                '🤖 AI Score: ' + str(_conf) + '/100 · Rank #' + str(_rank) + ' · ' + _reason + 
+                '</div>'
+            )
+
+    # ── Freshness bar ─────────────────────────────────────────────────────────
+    _fresh_pct = res.get('_freshness_pct', 100)
+    _age_min = res.get('_age_min', 0)
+    _fg_note = res.get('_fg_note','')
+    _fresh_col = '#059669' if _fresh_pct > 66 else ('#d97706' if _fresh_pct > 33 else '#dc2626')
+    freshness_html = (
+        '<div style="margin:4px 0 6px 0;">' 
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">' 
+        '<span style="font-family:monospace;font-size:.55rem;color:var(--muted);">Signal freshness</span>' 
+        '<span style="font-family:monospace;font-size:.55rem;color:' + _fresh_col + ';">' + str(_age_min) + 'm ago</span>' 
+        '</div>' 
+        '<div style="height:3px;background:#e2e8f0;border-radius:2px;">' 
+        '<div style="height:3px;width:' + str(int(_fresh_pct)) + '%;background:' + _fresh_col + ';border-radius:2px;transition:width 0.3s;"></div>' 
+        '</div>' 
+        + ('<div style="font-family:monospace;font-size:.55rem;color:#d97706;margin-top:2px;">⚠ ' + _fg_note + '</div>' if _fg_note else '') +
+        '</div>'
+    )
 
     # ── Catalyst cross-validation banner ─────────────────────────────────────
     _cat_live = st.session_state.get('cat_results', [])
@@ -2722,7 +2775,7 @@ def render_card(res, is_sniper=False, dual_confirmed=False):
       R:R <span style="color:{rr_col};font-weight:600;">{rr_str}</span><br>RSI <span style="color:var(--text);">{_rsi:.1f}</span><br>{session}
     </div>
   </div>
-  {dual_html}{catalyst_banner_html}{warnings_html}
+  {dual_html}{ai_badge_html}{freshness_html}{catalyst_banner_html}{warnings_html}
   <div class="sig-pips">
     <div class="pip-item">{pip(bd.get('ob_imbalance',0),4,14)} OB</div>
     <div class="pip-item">{pip(bd.get('funding',0)+bd.get('funding_hist',0),3,15)} FUNDING</div>
@@ -2790,7 +2843,7 @@ def render_card(res, is_sniper=False, dual_confirmed=False):
 
 # ─── SIDEBAR ─────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.title("⚡ APEX51")
+    st.title("⚡ APEXAI")
     st.caption("Pump & Dump Intelligence")
     # FIX: Use session state for nav to prevent journal→scanner glitch
     nav_options=["🔥 Scanner","⚙️ Settings","📒 Journal","📊 Backtest","🧠 Catalyst"]
@@ -2834,7 +2887,7 @@ with st.sidebar:
 
 
 # ─── HEADER / TICKER ─────────────────────────────────────────────────────────
-st.markdown('<div style="padding:18px 0 14px;"><div style="font-family:monospace;font-size:1.5rem;font-weight:700;color:#0f1117;">APEX51</div><div style="font-family:monospace;font-size:.56rem;font-weight:400;letter-spacing:.16em;color:#7a82a0;text-transform:uppercase;margin-top:2px;">Pump & Dump Intelligence Terminal v3.0 — Dual Confirm + FVG + Backtest</div></div>',unsafe_allow_html=True)
+st.markdown('<div style="padding:18px 0 14px;"><div style="font-family:monospace;font-size:1.5rem;font-weight:700;color:#0f1117;">APEX<span style="background:linear-gradient(135deg,#2563eb,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:900;">AI</span></div><div style="font-family:monospace;font-size:.56rem;font-weight:400;letter-spacing:.16em;color:#7a82a0;text-transform:uppercase;margin-top:2px;">AI-Powered Pump & Dump Intelligence Terminal v3.0 — Dual Confirm + FVG + Catalyst + Backtest</div></div>',unsafe_allow_html=True)
 
 if time.time()-st.session_state.get('fng_last_fetch',0)>300:
     try:
@@ -3081,7 +3134,7 @@ if nav=="⚙️ Settings":
         st.markdown('</div>',unsafe_allow_html=True)
         # ── DEMA + SUPERTREND ─────────────────────────────────────────────
         st.markdown('<div class="stg-card" style="border-color:#0284c7;"><div class="stg-title" style="color:#0284c7;">14. 🔵 DEMA + SuperTrend Strategy</div>', unsafe_allow_html=True)
-        st.markdown('<div class="hint">Runs alongside APEX51 on every scan. When both strategies agree → score boost. When they conflict → small penalty. Disable to skip entirely.</div>', unsafe_allow_html=True)
+        st.markdown('<div class="hint">Runs alongside APEX on every scan. When both strategies agree → score boost. When they conflict → small penalty. Disable to skip entirely.</div>', unsafe_allow_html=True)
         dst_c1, dst_c2, dst_c3, dst_c4 = st.columns(4)
         with dst_c1:
             st.markdown("**Core**")
@@ -3119,7 +3172,7 @@ if nav=="⚙️ Settings":
             ns_dst_sl_atr = st.number_input("SL ATR ×", 0.5, 4.0, float(S.get('dst_sl_atr', 1.5)), 0.25, format="%.2f")
             ns_dst_timeframe = st.selectbox("Timeframe", ["1m","3m","5m","15m","30m","1h","4h"], index=["1m","3m","5m","15m","30m","1h","4h"].index(S.get('dst_timeframe','5m')))
             ns_dst_tp_atr = st.number_input("TP ATR ×", 1.0, 8.0, float(S.get('dst_tp_atr', 3.0)), 0.25, format="%.2f")
-            st.markdown('<div class="setting-help">DST TP/SL shown in confirm reason only. APEX51 TP/SL is unchanged.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="setting-help">DST TP/SL shown in confirm reason only. APEX TP/SL is unchanged.</div>', unsafe_allow_html=True)
         with dst_c4:
             st.markdown("**Scoring**")
             ns_dst_boost   = st.slider("Boost when confirmed", 0, 20, int(S.get('dst_confirm_boost', 8)))
@@ -3131,7 +3184,7 @@ if nav=="⚙️ Settings":
             st.markdown("---")
         st.markdown("**🎯 DST Watchlist**")
         ns_dst_use_watchlist = st.toggle("Scan watchlist only", S.get('dst_use_watchlist', False))
-        st.markdown('<div class="setting-help">When ON — only scans coins below. When OFF — scans all APEX51 coins.</div>', unsafe_allow_html=True)
+        st.markdown('<div class="setting-help">When ON — only scans coins below. When OFF — scans all APEX coins.</div>', unsafe_allow_html=True)
 
         TOP_100_FUTURES = [
             "BTC","ETH","SOL","BNB","XRP","DOGE","ADA","AVAX","LINK","DOT",
@@ -3155,7 +3208,7 @@ if nav=="⚙️ Settings":
         if ns_dst_watchlist:
             st.markdown(f'<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:6px 10px;font-family:monospace;font-size:.6rem;color:#0284c7;margin:4px 0;">👁 Watching {len(ns_dst_watchlist)} coins: {", ".join(ns_dst_watchlist)}</div>', unsafe_allow_html=True)
         else:
-            st.markdown('<div style="font-family:monospace;font-size:.6rem;color:#94a3b8;">No coins selected — DST will scan all APEX51 coins</div>', unsafe_allow_html=True)
+            st.markdown('<div style="font-family:monospace;font-size:.6rem;color:#94a3b8;">No coins selected — DST will scan all APEX coins</div>', unsafe_allow_html=True)
 
 
         st.markdown('</div>', unsafe_allow_html=True)
@@ -3246,7 +3299,7 @@ if nav=="⚙️ Settings":
         gl_s0a, gl_s0b = st.columns(2)
         with gl_s0a:
             ns_symbol_blacklist = st.text_input("Symbol blacklist (comma separated)", S.get('symbol_blacklist',''), placeholder="e.g. SILVER,XAG,UKOIL,BRENT")
-            st.markdown('<div class="setting-help">Coins in this list will be excluded from ALL scans (APEX51 + G/L). Commodities like XAU, XAG, SILVER, UKOIL are auto-filtered — add any extras here.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="setting-help">Coins in this list will be excluded from ALL scans (APEX + G/L). Commodities like XAU, XAG, SILVER, UKOIL are auto-filtered — add any extras here.</div>', unsafe_allow_html=True)
         with gl_s0b:
             ns_ms_refresh = st.slider("Market Pulse refresh interval (min)", 1, 30, int(S.get('ms_refresh_interval', 5)))
             st.markdown('<div class="setting-help">How often Market Pulse auto-refreshes. ⬇️ Lower = more frequent but more API calls. Recommended: 5 min.</div>', unsafe_allow_html=True)
@@ -3452,7 +3505,7 @@ if nav=="📒 Journal":
         if js in dv.columns: dv=dv.sort_values(js,ascending=(js!='pump_score'))
         st.dataframe(dv,use_container_width=True,height=500)
         st.download_button("⬇️ Export CSV",dv.to_csv(index=False).encode(),
-            file_name=f"APEX51_{datetime.now().strftime('%Y%m%d')}.csv",mime="text/csv")
+            file_name=f"apex_{datetime.now().strftime('%Y%m%d')}.csv",mime="text/csv")
 
     # ═══════════════════════════════════════════════════════════════════
     # G/L PERFORMANCE DASHBOARD
@@ -3763,7 +3816,7 @@ if nav=="📊 Backtest":
             st.download_button(
                 "⬇️ Export External Backtest CSV",
                 df_ext_res.to_csv(index=False).encode(),
-                file_name=f"APEX51_external_backtest_{datetime.now().strftime('%Y%m%d')}.csv",
+                file_name=f"apex_external_backtest_{datetime.now().strftime('%Y%m%d')}.csv",
                 mime="text/csv")
 
         st.stop()
@@ -3983,7 +4036,7 @@ if nav=="📊 Backtest":
         st.download_button(
             "⬇️ Export Full Backtest CSV",
             df_res.to_csv(index=False).encode(),
-            file_name=f"APEX51_backtest_{datetime.now().strftime('%Y%m%d')}.csv",
+            file_name=f"apex_backtest_{datetime.now().strftime('%Y%m%d')}.csv",
             mime="text/csv")
 
     st.stop()
@@ -3993,7 +4046,7 @@ if nav=="📊 Backtest":
 # ═══════════════════════════════════════════════════════════════════════════
 if nav=="🧠 Catalyst":
     st.markdown('<div class="section-h">🧠 Catalyst Intelligence — AI Narrative Scanner</div>', unsafe_allow_html=True)
-    st.markdown('<div style="font-family:monospace;font-size:.62rem;color:#64748b;margin-bottom:12px;">Powered by Groq LLaMA 3.1 · Identifies narrative-driven pump catalysts · Cross-validates with APEX51 signals</div>', unsafe_allow_html=True)
+    st.markdown('<div style="font-family:monospace;font-size:.62rem;color:#64748b;margin-bottom:12px;">Powered by Groq LLaMA 3.1 · Identifies narrative-driven pump catalysts · Cross-validates with APEX signals</div>', unsafe_allow_html=True)
 
     groq_key = S.get('groq_key','') or "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"
 
@@ -4051,10 +4104,10 @@ if nav=="🧠 Catalyst":
                     except:
                         pass
                 if not headlines:
-                    headlines = [{'title': 'No news fetched — using APEX51 signal coins for analysis', 'coins': []}]
+                    headlines = [{'title': 'No news fetched — using APEXAI signal coins for analysis', 'coins': []}]
 
-                # ── Get current APEX51 signal coins ─────────────────────
-                APEX51_coins = list(set([
+                # ── Get current APEX signal coins ─────────────────────
+                apex_coins = list(set([
                     r['symbol'].replace('/USDT:USDT','').replace('/USDT','')
                     for r in st.session_state.get('results', [])
                 ] + [
@@ -4064,14 +4117,14 @@ if nav=="🧠 Catalyst":
 
                 # ── Build prompt ──────────────────────────────────────
                 news_text = "\n".join([f"- {h['title']} {('(' + ', '.join(h['coins']) + ')') if h['coins'] else ''}" for h in headlines[:25]])
-                APEX51_text = ", ".join(APEX51_coins) if APEX51_coins else "BTC, ETH, SOL, BNB, ARB"
+                apex_text = ", ".join(apex_coins) if apex_coins else "BTC, ETH, SOL, BNB, ARB"
 
                 prompt = f"""You are a Senior Crypto Market Analyst specializing in Catalyst-Driven Volatility.
 
 RECENT NEWS HEADLINES:
 {news_text}
 
-COINS CURRENTLY IN APEX51 SCANNER: {APEX51_text}
+COINS CURRENTLY IN APEX SCANNER: {apex_text}
 
 ANALYSIS TASKS:
 1. Identify High-Impact Catalysts: Flag mentions of structural changes, major ecosystem expansions, strategic partnerships, exchange listings, governance votes, whale movements.
@@ -4088,13 +4141,13 @@ Respond ONLY with a JSON array of up to 8 coins. No preamble, no markdown, no ex
     "sentiment_score": 85,
     "red_flag": false,
     "red_flag_reason": "",
-    "APEX51_match": true
+    "apex_match": true
   }}
 ]
 
 pump_probability must be exactly: High, Medium, Low, or Filtered
 timeframe must be exactly: Immediate (0-4h), Short-term (1-3 days), or Mid-term (1 week+)
-APEX51_match should be true if the coin symbol appears in: {APEX51_text}
+apex_match should be true if the coin symbol appears in: {apex_text}
 red_flag should be true only for clear shill/spam/pump-and-dump patterns"""
 
                 # ── Call Groq API ─────────────────────────────────────
@@ -4160,17 +4213,17 @@ red_flag should be true only for clear shill/spam/pump-and-dump patterns"""
             bg, border, text = prob_colors.get(prob, prob_colors['Low'])
             score = int(coin.get('sentiment_score', 0))
             bar_w = min(score, 100)
-            APEX51_match = coin.get('APEX51_match', False)
+            apex_match = coin.get('apex_match', False)
             red_flag = coin.get('red_flag', False)
             sym = coin.get('symbol','–')
             catalyst = coin.get('primary_catalyst','–')
             timeframe = coin.get('timeframe','–')
             red_reason = coin.get('red_flag_reason','')
-            APEX51_badge = (
+            apex_badge = (
                 '<span style="font-family:monospace;font-size:11px;padding:2px 8px;border-radius:4px;'
-                'background:#f0fdf4;color:#059669;border:0.5px solid #059669;">✅ APEX51 match active</span>'
-                if APEX51_match else
-                '<span style="font-family:monospace;font-size:11px;color:#94a3b8;">No active APEX51 signal</span>'
+                'background:#f0fdf4;color:#059669;border:0.5px solid #059669;">✅ APEX match active</span>'
+                if apex_match else
+                '<span style="font-family:monospace;font-size:11px;color:#94a3b8;">No active APEX signal</span>'
             )
             flag_badge = (
                 '<span style="font-family:monospace;font-size:11px;padding:2px 8px;border-radius:4px;'
@@ -4194,18 +4247,18 @@ red_flag should be true only for clear shill/spam/pump-and-dump patterns"""
                 '<span style="font-family:monospace;font-size:11px;padding:2px 7px;border-radius:4px;background:#eff6ff;color:#0284c7;border:0.5px solid #bfdbfe;">' + timeframe + '</span>'
                 + flag_badge +
                 '</div>'
-                '<div style="border-top:1px solid #e2e8f0;padding-top:8px;">' + APEX51_badge + '</div>'
+                '<div style="border-top:1px solid #e2e8f0;padding-top:8px;">' + apex_badge + '</div>'
                 '</div>'
             )
             with card_cols[i % 2]:
                 st.markdown(_cat_html, unsafe_allow_html=True)
 
-        # ── Cross-validation on APEX51 results ──────────────────────────
+        # ── Cross-validation on APEX results ──────────────────────────
         st.markdown("---")
-        st.markdown('<div style="font-family:monospace;font-size:.75rem;font-weight:700;color:#64748b;">Cross-validation — coins appearing in both APEX51 and Catalyst</div>', unsafe_allow_html=True)
-        APEX51_confirmed = [c for c in cat_results if c.get('APEX51_match') and not c.get('red_flag') and c.get('pump_probability') in ['High','Medium']]
-        if APEX51_confirmed:
-            for coin in APEX51_confirmed:
+        st.markdown('<div style="font-family:monospace;font-size:.75rem;font-weight:700;color:#64748b;">Cross-validation — coins appearing in both APEX and Catalyst</div>', unsafe_allow_html=True)
+        apex_confirmed = [c for c in cat_results if c.get('apex_match') and not c.get('red_flag') and c.get('pump_probability') in ['High','Medium']]
+        if apex_confirmed:
+            for coin in apex_confirmed:
                 prob = coin.get('pump_probability','Medium')
                 score = coin.get('sentiment_score',0)
                 bg = '#f0fdf4' if prob == 'High' else '#fffbeb'
@@ -4219,7 +4272,7 @@ red_flag should be true only for clear shill/spam/pump-and-dump patterns"""
                 <span style="font-family:monospace;font-size:11px;padding:2px 8px;border-radius:4px;background:white;color:{text};border:0.5px solid {border};">{coin["symbol"]}</span>
                 </div>''', unsafe_allow_html=True)
         else:
-            st.markdown('<div style="font-family:monospace;font-size:.65rem;color:#94a3b8;">No cross-validated signals yet — run APEX51 scan first then run Catalyst scan</div>', unsafe_allow_html=True)
+            st.markdown('<div style="font-family:monospace;font-size:.65rem;color:#94a3b8;">No cross-validated signals yet — run APEX scan first then run Catalyst scan</div>', unsafe_allow_html=True)
 
     elif not cat_should_run:
         st.markdown('<div class="empty-st">🧠 Click ▶ Run Catalyst Scan to analyze current market narratives</div>', unsafe_allow_html=True)
@@ -4368,17 +4421,40 @@ if do_scan:
                         if _dst_confirmed and _dst:
                             dst_line = (f"\n🔵 **DEMA+ST CONFIRMED** ✅ | DIR: {_dst['direction']} | RSI: {_dst['rsi']} | VOL: {_dst['vol_ratio']}× | ST flip: {_dst['fresh_bars']} bars ago | R:R {_dst['rr']}")
                         elif _dst and not _dst_confirmed:
-                            dst_line = (f"\n🔵 **DEMA+ST CONFLICT** ⚠️ | DEMA+ST says {_dst['direction']} (opposite to APEX51)")
+                            dst_line = (f"\n🔵 **DEMA+ST CONFLICT** ⚠️ | DEMA+ST says {_dst['direction']} (opposite to APEX)")
                         elif not _dst:
                             dst_line = "\n🔵 **DEMA+ST** — no signal this candle"
                         else:
                             dst_line = ""
+                        # ── AI score for Discord ─────────────────────────
+                        _dc_sym = r.get('symbol','').replace('/USDT:USDT','').replace('/USDT','').upper()
+                        _dc_ai = st.session_state.get('ai_trade_scores',{}).get(_dc_sym,{})
+                        _dc_ai_line = ""
+                        if _dc_ai:
+                            _dc_rank = _dc_ai.get('rank',99)
+                            _dc_conf = _dc_ai.get('trade_confidence',0)
+                            _dc_reason = _dc_ai.get('reason','')
+                            _dc_avoid = _dc_ai.get('avoid',False)
+                            if _dc_rank == 1 and not _dc_avoid:
+                                _dc_ai_line = f"\n🎯 **BEST SETUP** — AI Score: {_dc_conf}/100 · {_dc_reason}"
+                            elif _dc_avoid:
+                                _dc_ai_line = f"\n⛔ **AI: AVOID** — {_dc_ai.get('avoid_reason','')}"
+                            else:
+                                _dc_ai_line = f"\n🤖 AI Score: {_dc_conf}/100 · Rank #{_dc_rank} · {_dc_reason}"
+                        # ── Freshness + F&G note ──────────────────────────
+                        _dc_age = r.get('_age_min', 0)
+                        _dc_fg_note = r.get('_fg_note','')
+                        _dc_fresh_line = f"\n⏱ Signal age: {_dc_age}m" if _dc_age > 0 else ""
+                        _dc_fg_line = f"\n⚠️ {_dc_fg_note}" if _dc_fg_note else ""
                         stats_text=(f"{dual_line}\n{sig_hdr}\n"
                                     f"**Exchange:** {r.get('exchange','MEXC')} | **RSI:** {r.get('rsi',0):.1f}{rsi_arrow} | **R:R:** {rr_ratio}\n"
                                     f"📍 **Entry Zone:** `${_elo:.6f}`–`${_ehi:.6f}`\n"
                                     f"🎯 **TP1:** `${_tp1:.6f}` | **TP2:** `${_tp2:.6f}` | **TP3:** `${_tp3:.6f}`\n"
                                     f"🛑 **SL:** `${_s_:.6f}`"
                                     +dst_line
+                                    +_dc_ai_line
+                                    +_dc_fresh_line
+                                    +_dc_fg_line
                                     +(f"\n**OI 6h:** {oi_ch:+.1f}%" if abs(oi_ch)>=5 else "")
                                     +(f"\n{sentiment.get('source','')} L/S: {sentiment['top_long_pct']:.0f}% / {sentiment['top_short_pct']:.0f}% | Taker: {sentiment['taker_buy_pct']:.0f}%" if sentiment.get('available') else "")
                                     +(f"\n⚠️ "+' | '.join(r.get('warnings',[])) if r.get('warnings') else ""))
@@ -4391,7 +4467,7 @@ if do_scan:
                                 {'name':f'📝 All Reasons ({len(r["reasons"])})','value':reasons_str[:1024],'inline':False},
                                 *([{'name':'📝 Reasons (continued)','value':reasons_str[1024:2048],'inline':False}] if len(reasons_str)>1024 else [])
                             ],
-                            'footer':{'text':f'APEX51 Intelligence Terminal • {_dual_time()[0]} | {_dual_time()[1]}'}
+                            'footer':{'text':f'APEXAI Intelligence Terminal • {_dual_time()[0]} | {_dual_time()[1]}'}
                         })
                     st.session_state.alerted_sigs.add(ak_recheck)
                     _ch=[c for c,v in [('Discord',eff_s.get('discord_webhook')),('Telegram',eff_s.get('tg_token') and eff_s.get('tg_chat_id'))] if v]
@@ -4500,7 +4576,7 @@ if st.session_state.get('sentinel_active') and do_scan and st.session_state.scan
                                            f"TP1: `${_tp1:.6f}` | TP2: `${_tp2:.6f}` | TP3: `${_tp3:.6f}`\n"
                                            f"🛑 SL: `${_s_:.6f}`"),
                             "fields":[{'name':f'📝 All Reasons ({len(r["reasons"])})','value':"\n".join([f"▸ {x}" for x in r['reasons']])[:1024],'inline':False}],
-                            "footer":{"text":f"APEX51 Sentinel — Top 100 | {_dual_time()[0]} | {_dual_time()[1]}"}})
+                            "footer":{"text":f"APEX Sentinel — Top 100 | {_dual_time()[0]} | {_dual_time()[1]}"}})
                     st.session_state.alerted_sigs.add(ak)
 
         chk_f=st.session_state.get('sentinel_total_checked',0)
@@ -4544,6 +4620,108 @@ if not results:
 | Errors | **{len(errs)}** out of {eff_s['scan_depth']} coins |""")
             if errs: st.code("\n".join(errs[:15]),language="text")
 else:
+    # ── Freshness decay ──────────────────────────────────────────────────────
+    import time as _time
+    _now_ts = _time.time()
+    for _r in results:
+        try:
+            import datetime
+            _st = _r.get('scan_time','')
+            if _st:
+                _dt = datetime.datetime.strptime(_st[:19], '%Y-%m-%d %H:%M:%S')
+                _age_min = (_now_ts - _dt.replace(tzinfo=datetime.timezone.utc).timestamp()) / 60
+            else:
+                _age_min = 0
+        except:
+            _age_min = 0
+        _r['_age_min'] = round(_age_min, 1)
+        # decay: -2 pts per minute after 5 min, cap at -20
+        _decay = max(0, min(20, (_age_min - 5) * 2)) if _age_min > 5 else 0
+        _r['_decayed_score'] = max(0, _r['pump_score'] - _decay)
+        _r['_freshness_pct'] = max(0, min(100, 100 - (_age_min / 30) * 100))
+
+    # ── F&G context penalty ───────────────────────────────────────────────────
+    _fng = st.session_state.get('fng_val', 50)
+    for _r in results:
+        _fg_penalty = 0
+        _fg_note = ''
+        if _fng <= 25 and _r['type'] == 'LONG' and not _r.get('dual_confirmed') and not _r.get('momentum_confirmed'):
+            _fg_penalty = 15
+            _fg_note = f'F&G Extreme Fear ({_fng}) — unconfirmed LONG penalised'
+        elif _fng <= 25 and _r['type'] == 'LONG' and _r.get('momentum_confirmed') and not _r.get('dual_confirmed'):
+            _fg_penalty = 7
+            _fg_note = f'F&G Extreme Fear ({_fng}) — partial penalty'
+        elif _fng >= 75 and _r['type'] == 'SHORT' and not _r.get('dual_confirmed'):
+            _fg_penalty = 10
+            _fg_note = f'F&G Extreme Greed ({_fng}) — unconfirmed SHORT penalised'
+        _r['_fg_penalty'] = _fg_penalty
+        _r['_fg_note'] = _fg_note
+        _r['_final_score'] = max(0, _r['_decayed_score'] - _fg_penalty)
+
+    # ── Re-sort by final score ────────────────────────────────────────────────
+    results = sorted(results, key=lambda x: x['_final_score'], reverse=True)
+
+    # ── AI Trade Scorer ───────────────────────────────────────────────────────
+    _ai_scored = st.session_state.get('ai_trade_scores', {})
+    _ai_last_ts = st.session_state.get('ai_score_ts', 0)
+    _ai_stale = (_now_ts - _ai_last_ts) > 300  # re-score every 5 min
+    if results and _ai_stale and st.session_state.get('groq_key','') or (results and _ai_stale):
+        try:
+            import requests as _rq
+            _gk = st.session_state.get('groq_key','') or "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"
+            _sig_list = []
+            for _r in results[:8]:
+                _sig_list.append({
+                    'symbol': _r['symbol'],
+                    'direction': _r['type'],
+                    'score': _r['pump_score'],
+                    'final_score': _r['_final_score'],
+                    'class': _r['cls'],
+                    'age_min': _r['_age_min'],
+                    'momentum': _r.get('momentum_confirmed', False),
+                    'dual': _r.get('dual_confirmed', False),
+                    'exchange': _r.get('exchange',''),
+                    'rr': _r.get('rr', 0),
+                    'reasons_count': len(_r.get('reasons',[])),
+                    'fg_penalty': _r['_fg_penalty'],
+                    'catalyst_match': any(
+                        c.get('symbol','').upper() == _r['symbol'].replace('/USDT:USDT','').replace('/USDT','').upper()
+                        and not c.get('red_flag')
+                        and c.get('pump_probability') in ['High','Medium']
+                        for c in st.session_state.get('cat_results',[])
+                    )
+                })
+            _btc_ctx = f"BTC trend: {st.session_state.get('btc_trend','NEUTRAL')}, F&G: {_fng} ({st.session_state.get('fng_txt','Neutral')})"
+            _checklist = "Pre-trade rules: GATE exchange preferred, LONG direction preferred, trade window 06:00-15:00 UTC, avoid low R:R"
+            _prompt = f"""You are a crypto futures trading advisor. Rank these signals by trade priority.
+
+Market context: {_btc_ctx}
+{_checklist}
+
+Signals:
+{_sig_list}
+
+Respond ONLY with a JSON array ranked best-to-worst. No preamble, no markdown:
+[{{"symbol":"X","trade_confidence":85,"rank":1,"reason":"one line why this is best setup","avoid":false,"avoid_reason":""}}]
+
+trade_confidence: 0-100. avoid: true if this signal should be skipped entirely. Keep reasons under 10 words."""
+
+            _ar = _rq.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={"Authorization": f"Bearer {_gk}", "Content-Type": "application/json", "User-Agent": "Mozilla/5.0"},
+                json={"model": "llama-3.3-70b-versatile", "messages": [{"role": "user", "content": _prompt}], "max_tokens": 800, "temperature": 0.2},
+                timeout=20
+            )
+            if _ar.status_code == 200:
+                _raw = _ar.json()['choices'][0]['message']['content'].strip()
+                _raw = _raw.replace('```json','').replace('```','').strip()
+                _scored = __import__('json').loads(_raw)
+                _ai_scored = {item['symbol']: item for item in _scored}
+                st.session_state['ai_trade_scores'] = _ai_scored
+                st.session_state['ai_score_ts'] = _now_ts
+        except:
+            pass
+
     sq=[r for r in results if r['cls']=="squeeze"]
     br=[r for r in results if r['cls']=="breakout"]
     wh=[r for r in results if r['cls']=="whale_driven"]
@@ -4617,7 +4795,7 @@ dst_should_run = dst_run or (time.time() - dst_last_ts >= dst_interval * 60)
 if dst_should_run:
     coin_list = st.session_state.get('last_coin_list', [])
     if not coin_list:
-        st.warning("⚠️ Run an APEX51 scan first so DEMA+ST has a coin list to work with.")
+        st.warning("⚠️ Run an APEX scan first so DEMA+ST has a coin list to work with.")
     else:
         with st.spinner(f"🔵 DEMA+ST scanning {len(coin_list)} coins on {eff_s.get('dst_timeframe','5m')}..."):
             try:
