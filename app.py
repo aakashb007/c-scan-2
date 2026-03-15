@@ -5282,6 +5282,33 @@ col_btn,_=st.columns([2,5])
 with col_btn: do_scan=st.button("⚡  RUN PUMP/DUMP SCAN",use_container_width=True)
 if eff_s.get('auto_scan'): do_scan=True; time.sleep(0.3)
 
+# ── Kill zone — block main scanner + Sentinel completely ─────────────────────
+_ks_on = eff_s.get('kill_switch_on', False)
+_in_kill_zone = False
+_kill_zone_label = ''
+if _ks_on:
+    _now_utc_h = datetime.now(timezone.utc).hour
+    _now_utc_m = datetime.now(timezone.utc).minute
+    for _kz in eff_s.get('kill_zones', []):
+        if not _kz.get('active', True): continue
+        _kzs = int(_kz.get('start', 16))
+        _kze = int(_kz.get('end', 19))
+        _in_range = (_kzs <= _now_utc_h < _kze) if _kzs <= _kze else (_now_utc_h >= _kzs or _now_utc_h < _kze)
+        if _in_range:
+            _in_kill_zone = True
+            _kill_zone_label = _kz.get('label', f'{_kzs:02d}:00–{_kze:02d}:00 UTC')
+            break
+
+if _in_kill_zone and do_scan:
+    do_scan = False  # block scanner from running
+    st.markdown(f'''<div style="background:#1a0505;border:1px solid #dc262644;border-radius:8px;padding:10px 16px;margin-bottom:10px;display:flex;align-items:center;gap:10px;">
+      <span style="font-size:1.2rem;">🔴</span>
+      <div>
+        <div style="font-family:monospace;font-size:.7rem;font-weight:700;color:#dc2626;">KILL ZONE ACTIVE — Scanner Paused</div>
+        <div style="font-family:monospace;font-size:.6rem;color:#94a3b8;">{_kill_zone_label} · UTC {_now_utc_h:02d}:{_now_utc_m:02d} · DEMA+ST and G/L scanners still running</div>
+      </div>
+    </div>''', unsafe_allow_html=True)
+
 if do_scan:
     try:
         screener=PrePumpScreener(
@@ -5522,7 +5549,7 @@ if do_scan:
 
 
 # ─── SENTINEL RUNNER ─────────────────────────────────────────────────────────
-if st.session_state.get('sentinel_active') and do_scan and st.session_state.scan_count>0:
+if st.session_state.get('sentinel_active') and do_scan and st.session_state.scan_count>0 and not _in_kill_zone:
     sent_ph=st.empty()
     sent_ph.markdown('<div style="background:#0f1117;border-radius:8px;padding:10px 18px;margin-bottom:10px;border:1px solid #7c3aed44;"><span style="color:#7c3aed;font-family:monospace;font-size:.65rem;font-weight:700;">🛰️ SENTINEL — TOP 100 SCANNING…</span></div>',unsafe_allow_html=True)
     try:
