@@ -3074,6 +3074,48 @@ st.markdown(f"""<div class="ticker-bar">
 # ═══════════════════════════════════════════════════════════════════════════
 if nav=="⚙️ Settings":
     st.markdown('<div class="section-h">Settings — all thresholds and scoring weights</div>',unsafe_allow_html=True)
+
+    # ── Settings Backup / Restore ─────────────────────────────────────────────
+    import json as _json_s
+    _bcol1, _bcol2, _bcol3 = st.columns([2, 2, 3])
+
+    with _bcol1:
+        # Download current settings as JSON
+        _current_s = load_settings()
+        _s_json = _json_s.dumps(_current_s, indent=2)
+        st.download_button(
+            label="⬇️ Download Settings",
+            data=_s_json,
+            file_name="apex_settings.json",
+            mime="application/json",
+            use_container_width=True,
+            help="Download all current settings as a JSON file to back up or transfer"
+        )
+
+    with _bcol2:
+        # Upload settings JSON
+        _uploaded_s = st.file_uploader(
+            "⬆️ Upload Settings",
+            type=["json"],
+            key="settings_upload",
+            label_visibility="collapsed",
+            help="Upload a previously downloaded apex_settings.json to restore all settings"
+        )
+        if _uploaded_s is not None:
+            try:
+                _loaded = _json_s.loads(_uploaded_s.read().decode('utf-8'))
+                # Merge with defaults so missing keys get defaults
+                _merged = {**DEFAULT_SETTINGS, **_loaded}
+                save_settings(_merged)
+                st.success(f"✅ Settings restored! {len(_loaded)} values loaded.")
+                st.rerun()
+            except Exception as _ue:
+                st.error(f"❌ Invalid settings file: {_ue}")
+
+    with _bcol3:
+        st.markdown('<div style="font-family:monospace;font-size:.6rem;color:#64748b;padding-top:8px;">💡 Download your settings before closing Colab. Upload to instantly restore everything — no manual changes needed.</div>', unsafe_allow_html=True)
+
+    st.markdown("---")
     with st.form("settings_form"):
         # ── ALERTS ────────────────────────────────────────────────────────
         st.markdown('<div class="stg-card"><div class="stg-title">1. 🔔 Notification Controls</div>',unsafe_allow_html=True)
